@@ -1,6 +1,7 @@
 """
 SaaS Signal Miner - Streamlit Dashboard
 Frontend application for displaying and filtering SaaS startup signals
+Production-ready for Streamlit Cloud deployment
 """
 
 import streamlit as st
@@ -243,7 +244,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666;'>
-        <p>🚀 SaaS Signal Miner | Powered by Perplexity API & LangChain</p>
+        <p>🚀 SaaS Signal Miner | Powered by Perplexity API</p>
         <p>Data is refreshed every 5 minutes. Use the refresh button for latest results.</p>
     </div>
     """, unsafe_allow_html=True)

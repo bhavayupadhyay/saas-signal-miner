@@ -10,8 +10,12 @@ from dotenv import load_dotenv
 from perplexity_client import PerplexityClient
 from utils import parse_saas_startups_response, format_startup_data, get_fallback_data
 
-# Load environment variables
-load_dotenv()
+# Load environment variables only for local development
+# In production, Streamlit secrets will be used
+try:
+    load_dotenv()
+except Exception:
+    pass  # Ignore if .env file doesn't exist
 
 class SaaSSignalMiner:
     """

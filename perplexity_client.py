@@ -1,6 +1,7 @@
 import os
 import requests
 from typing import Optional
+import streamlit as st
 
 
 class PerplexityClient:
@@ -13,11 +14,21 @@ class PerplexityClient:
         Initialize the Perplexity client.
         
         Args:
-            api_key: Perplexity API key. If not provided, reads from PERPLEXITY_API_KEY env var.
+            api_key: Perplexity API key. If not provided, reads from Streamlit secrets or PERPLEXITY_API_KEY env var.
         """
-        self.api_key = api_key or os.getenv('PERPLEXITY_API_KEY')
+        # Priority: passed api_key > Streamlit secrets > environment variable
+        if api_key:
+            self.api_key = api_key
+        else:
+            # Try Streamlit secrets first (for production)
+            try:
+                self.api_key = st.secrets["API"]["PERPLEXITY_API_KEY"]
+            except (KeyError, AttributeError):
+                # Fallback to environment variable (for local development)
+                self.api_key = os.getenv('PERPLEXITY_API_KEY')
+        
         if not self.api_key:
-            raise ValueError("Perplexity API key is required. Set PERPLEXITY_API_KEY environment variable or pass api_key parameter.")
+            raise ValueError("Perplexity API key is required. Set PERPLEXITY_API_KEY in Streamlit secrets or environment variable, or pass api_key parameter.")
         
         self.base_url = "https://api.perplexity.ai/chat/completions"
         self.model = "llama-3-sonar-large-32k"
