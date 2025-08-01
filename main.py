@@ -7,8 +7,7 @@ import os
 import json
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage
+from perplexity_client import PerplexityClient
 from utils import parse_saas_startups_response, format_startup_data, get_fallback_data
 
 # Load environment variables
@@ -21,22 +20,14 @@ class SaaSSignalMiner:
     
     def __init__(self):
         """Initialize the SaaS Signal Miner with API configuration"""
-        self.api_key = os.getenv('OPENAI_API_KEY')
-        self.api_base = os.getenv('OPENAI_API_BASE', 'https://api.perplexity.ai')
-        
-        # Initialize LangChain client
-        self.llm = None
-        if self.api_key:
-            try:
-                self.llm = ChatOpenAI(
-                    model="llama-3-sonar-large-32k-online",
-                    temperature=0.2,
-                    openai_api_base=self.api_base,
-                    openai_api_key=self.api_key
-                )
-            except Exception as e:
-                print(f"Error initializing LangChain client: {e}")
-                self.llm = None
+        # Initialize Perplexity client
+        self.client = None
+        try:
+            self.client = PerplexityClient()
+            print("✅ PerplexityClient initialized successfully")
+        except Exception as e:
+            print(f"Error initializing PerplexityClient: {e}")
+            self.client = None
     
     def generate_startup_query(self) -> str:
         """
@@ -73,7 +64,7 @@ Return the data as a JSON array with these exact field names."""
         Returns:
             List[Dict[str, Any]]: List of startup data with growth scores
         """
-        if not self.llm:
+        if not self.client:
             print("Warning: No API key configured or API initialization failed. Using fallback data.")
             return format_startup_data(get_fallback_data())
         
@@ -83,14 +74,13 @@ Return the data as a JSON array with these exact field names."""
             
             # Make API call
             print("Scanning for SaaS startups using Perplexity API...")
-            response = self.llm.invoke([HumanMessage(content=query)])
+            response = self.client.ask(query)
             
             # Parse the response
-            response_text = response.content
-            print(f"Received response from API (length: {len(response_text)})")
+            print(f"Received response from API (length: {len(response)})")
             
             # Parse and format the startup data
-            startups = parse_saas_startups_response(response_text)
+            startups = parse_saas_startups_response(response)
             formatted_startups = format_startup_data(startups)
             
             print(f"Successfully parsed {len(formatted_startups)} startups")
@@ -98,7 +88,7 @@ Return the data as a JSON array with these exact field names."""
             
         except Exception as e:
             print(f"Error scanning for startups: {e}")
-            print("Using fallback data...")
+            print("Falling back to dummy data...")
             return format_startup_data(get_fallback_data())
     
     def filter_startups(self, startups: List[Dict[str, Any]], 

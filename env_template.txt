@@ -1,6 +1,5 @@
 # Perplexity API Configuration
-OPENAI_API_KEY=your_perplexity_key_here
-OPENAI_API_BASE=https://api.perplexity.ai
+PERPLEXITY_API_KEY=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
 
 # Supabase Configuration (optional)
 SUPABASE_URL=your_supabase_url_here
